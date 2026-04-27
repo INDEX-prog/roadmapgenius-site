@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
+import { trackEvent, AnalyticsEvents } from "@/lib/analytics";
 
 interface NavLink {
   href: string;
@@ -21,6 +22,17 @@ export default function Header(): React.ReactElement {
   const toggleMenu = (): void => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // Track CTA clicks with analytics
+  const handleCTAClick = useCallback((ctaId: string, ctaText: string, destination?: string) => {
+    trackEvent(AnalyticsEvents.CTA_CLICK, {
+      cta_id: ctaId,
+      cta_text: ctaText,
+      cta_location: "header",
+      cta_destination: destination,
+      cta_variant: ctaId === "header_try_free" ? "primary" : "link",
+    });
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
@@ -67,10 +79,15 @@ export default function Header(): React.ReactElement {
             <Link
               href="#signup"
               className="text-gray-600 hover:text-primary-600 font-medium transition-colors duration-200"
+              onClick={() => handleCTAClick("header_login", "Connexion", "#signup")}
             >
               Connexion
             </Link>
-            <Link href="#signup" className="btn-primary">
+            <Link
+              href="#signup"
+              className="btn-primary"
+              onClick={() => handleCTAClick("header_try_free", "Essayer gratuitement", "#signup")}
+            >
               Essayer gratuitement
             </Link>
           </div>
@@ -132,14 +149,20 @@ export default function Header(): React.ReactElement {
                 <Link
                   href="#signup"
                   className="text-center text-gray-600 hover:text-primary-600 font-medium transition-colors duration-200 py-2"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleCTAClick("header_mobile_login", "Connexion", "#signup");
+                  }}
                 >
                   Connexion
                 </Link>
                 <Link
                   href="#signup"
                   className="btn-primary text-center"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleCTAClick("header_mobile_try_free", "Essayer gratuitement", "#signup");
+                  }}
                 >
                   Essayer gratuitement
                 </Link>
